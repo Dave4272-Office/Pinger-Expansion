@@ -86,35 +86,37 @@ public class PingerExpansion extends PlaceholderExpansion implements Cacheable, 
         final String address = identifier.substring(place + 1);
 
         try {
-            final Future<Pinger> pinger = this.cache.get(address);
+            final Future<Pinger> future = this.cache.get(address);
+            final Pinger pinger = future.isDone() ? future.get() : null;
+
             switch (type) {
                 case "motd":
-                    if (pinger == null || !pinger.isDone()) return "";
-                    return pinger.get().getMotd();
+                    if (pinger == null) return "";
+                    return pinger.getMotd();
 
                 case "count":
                 case "players":
-                    if (pinger == null || !pinger.isDone()) return "0";
-                    return String.valueOf(pinger.get().getPlayersOnline());
+                    if (pinger == null) return "0";
+                    return String.valueOf(pinger.getPlayersOnline());
 
                 case "max":
                 case "maxplayers":
-                    if (pinger == null || !pinger.isDone()) return "0";
-                    return String.valueOf(pinger.get().getMaxPlayers());
+                    if (pinger == null) return "0";
+                    return String.valueOf(pinger.getMaxPlayers());
 
                 case "pingversion":
                 case "pingv":
-                    if (pinger == null || !pinger.isDone()) return "-1";
-                    return String.valueOf(pinger.get().getPingVersion());
+                    if (pinger == null) return "-1";
+                    return String.valueOf(pinger.getPingVersion());
 
                 case "gameversion":
                 case "version":
-                    if (pinger == null || !pinger.isDone()) return "";
-                    return pinger.get().getGameVersion();
+                    if (pinger == null) return "";
+                    return pinger.getGameVersion();
 
                 case "online":
                 case "isonline":
-                    if (pinger == null || !pinger.isDone()) return this.offline;
+                    if (pinger == null) return this.offline;
                     return this.online;
             }
         } catch (InterruptedException | ExecutionException ignored) {
