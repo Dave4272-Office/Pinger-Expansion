@@ -9,6 +9,7 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Taskable;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -27,6 +28,7 @@ public class PingerExpansion extends PlaceholderExpansion implements Cacheable, 
 
     private String offline = "&cOffline";
 
+    @Nullable
     private LoadingCache<String, Future<Pinger>> cache;
 
     private int interval = 60;
@@ -53,11 +55,13 @@ public class PingerExpansion extends PlaceholderExpansion implements Cacheable, 
     }
 
     public void stop() {
+        if (this.cache == null) return;
         this.cache.asMap().values().forEach(future -> future.cancel(true));
         this.cache = null;
     }
 
     public void clear() {
+        if (this.cache == null) return;
         this.cache.cleanUp();
     }
 
@@ -85,6 +89,7 @@ public class PingerExpansion extends PlaceholderExpansion implements Cacheable, 
         final String type = identifier.substring(0, place).toLowerCase(Locale.ROOT);
         final String address = identifier.substring(place + 1);
 
+        if (this.cache == null) return null;
         try {
             final Future<Pinger> future = this.cache.get(address);
             final Pinger pinger = future.isDone() ? future.get() : null;
@@ -319,7 +324,7 @@ public class PingerExpansion extends PlaceholderExpansion implements Cacheable, 
             });
         }
 
-        private InetSocketAddress address(final String  key) {
+        private InetSocketAddress address(final String key) {
             final int index = key.indexOf(":");
             if (index == -1) return new InetSocketAddress(key, 25565);
 
